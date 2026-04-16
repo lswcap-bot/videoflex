@@ -5,8 +5,8 @@ GitHub Actions에서 YOUTUBE_API_KEY 환경변수를 통해 실행됩니다.
 import os
 import json
 import re
+import requests
 from datetime import datetime, timezone
-from googleapiclient.discovery import build
 
 # ── 설정 ────────────────────────────────────────────────────────────
 API_KEY        = os.environ["YOUTUBE_API_KEY"]
@@ -14,6 +14,7 @@ CHANNEL_ID     = "UChnVG_s2dxy6Dmp7AOLdbLQ"
 UPLOADS_PL_ID  = "UU" + CHANNEL_ID[2:]   # UC… → UU…
 MAX_RESULTS    = 50
 OUTPUT_FILE    = "data.js"
+BASE_URL       = "https://www.googleapis.com/youtube/v3/playlistItems"
 # ────────────────────────────────────────────────────────────────────
 
 
@@ -24,19 +25,25 @@ def best_thumbnail(thumbnails: dict) -> str:
     return ""
 
 
-def fetch_all_videos(youtube) -> list[dict]:
+def fetch_all_videos() -> list:
     videos = []
     page_token = None
 
     while True:
-        resp = youtube.playlistItems().list(
-            part="snippet",
-            playlistId=UPLOADS_PL_ID,
-            maxResults=MAX_RESULTS,
-            pageToken=page_token,
-        ).execute()
+        params = {
+            "part":       "snippet",
+            "playlistId": UPLOADS_PL_ID,
+            "maxResults": MAX_RESULTS,
+            "key":        API_KEY,
+        }
+        if page_token:
+            params["pageToken"] = page_token
 
-        for item in resp.get("items", []):
+        resp = requests.get(BASE_URL, params=params, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+
+        for item in data.get("items", []):
             s = item["snippet"]
             videos.append({
                 "title":       s["title"],
@@ -46,14 +53,14 @@ def fetch_all_videos(youtube) -> list[dict]:
                 "description": s.get("description", "")[:200],
             })
 
-        page_token = resp.get("nextPageToken")
+        page_token = data.get("nextPageToken")
         if not page_token:
             break
 
     return videos
 
 
-def to_data_js(videos: list[dict]) -> str:
+def to_data_js(videos: list) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     json_str = json.dumps(videos, ensure_ascii=False, indent=4)
     return (
@@ -64,13 +71,12 @@ def to_data_js(videos: list[dict]) -> str:
 
 
 def main():
-    youtube = build("youtube", "v3", developerKey=API_KEY)
     print(f"Fetching videos from playlist: {UPLOADS_PL_ID}")
 
-    videos = fetch_all_videos(youtube)
+    videos = fetch_all_videos()
     print(f"Fetched {len(videos)} videos")
 
-    # Read existing data.js to check if anything changed
+    # 기존 data.js와 비교해 신규 영상 확인
     existing_ids = set()
     if os.path.exists(OUTPUT_FILE):
         content = open(OUTPUT_FILE, encoding="utf-8").read()
@@ -83,7 +89,6 @@ def main():
     else:
         print("No new videos since last run.")
 
-    # Always write (updatedAt timestamp changes)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write(to_data_js(videos))
 

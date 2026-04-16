@@ -23,7 +23,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install google-api-python-client
+        run: pip install requests
 
       - name: Fetch latest videos
         env:
