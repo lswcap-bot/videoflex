@@ -1,0 +1,41 @@
+name: Update Video Data
+
+on:
+  schedule:
+    # 매일 오전 9시, 오후 3시, 오후 9시 (KST = UTC+9) 실행
+    # UTC 기준: 00:00, 06:00, 12:00
+    - cron: '0 0,6,12 * * *'
+  workflow_dispatch:   # GitHub Actions 페이지에서 수동 실행 가능
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # data.js 커밋을 위해 필요
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install google-api-python-client
+
+      - name: Fetch latest videos
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python scripts/fetch_videos.py
+
+      - name: Commit and push if data changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.js
+          git diff --staged --quiet && echo "No changes to commit." || (
+            git commit -m "chore: update video data ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+            git push
+          )

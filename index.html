@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스타트업 레시피 — Archive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', 'Noto Sans KR', -apple-system, sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+    }
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* ── Nav glass ── */
+    .glass-nav {
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    /* ── Hero ── */
+    .hero-gradient {
+      background:
+        linear-gradient(to right, rgba(0,0,0,0.92) 35%, rgba(0,0,0,0.4) 70%, transparent),
+        linear-gradient(to top, #000 0%, rgba(0,0,0,0.6) 30%, transparent 60%);
+    }
+    /* ── Cards ── */
+    .video-card {
+      position: relative;
+      transition: transform 0.22s cubic-bezier(.25,.46,.45,.94),
+                  box-shadow 0.22s ease,
+                  border-color 0.22s ease;
+    }
+    .video-card:hover { transform: scale(1.045); z-index: 5; box-shadow: 0 20px 60px rgba(0,0,0,0.7); }
+    .video-card .play-overlay { opacity: 0; transition: opacity 0.2s ease; }
+    .video-card:hover .play-overlay { opacity: 1; }
+    .video-card .thumb-img { transition: filter 0.22s ease; }
+    .video-card:hover .thumb-img { filter: brightness(0.65); }
+    /* ── Chips ── */
+    .chip { transition: all 0.18s ease; }
+    .chip-active { background: #E50914 !important; color: #fff !important; border-color: #E50914 !important; }
+    /* ── Buttons ── */
+    .btn-red { background: #E50914; transition: background 0.18s, box-shadow 0.18s; }
+    .btn-red:hover { background: #f40612; box-shadow: 0 0 24px rgba(229,9,20,0.45); }
+    .btn-outline { background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); transition: background 0.18s; }
+    .btn-outline:hover { background: rgba(255,255,255,0.22); }
+    /* ── Search ── */
+    .search-input {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.18s, border-color 0.18s;
+    }
+    .search-input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.11);
+      border-color: rgba(229,9,20,0.45);
+    }
+    /* ── Modal ── */
+    .modal-overlay { background: rgba(0,0,0,0.97); backdrop-filter: blur(10px); }
+    /* ── Badges ── */
+    .badge-weekly    { background:rgba(16,185,129,.18); color:#34d399; border:1px solid rgba(52,211,153,.28); }
+    .badge-report    { background:rgba(59,130,246,.18); color:#93c5fd; border:1px solid rgba(147,197,253,.28); }
+    .badge-interview { background:rgba(168,85,247,.18); color:#c084fc; border:1px solid rgba(192,132,252,.28); }
+    .badge-news      { background:rgba(251,191,36,.18);  color:#fcd34d; border:1px solid rgba(252,211,77,.28); }
+    .badge-bm        { background:rgba(6,182,212,.18);   color:#67e8f9; border:1px solid rgba(103,232,249,.28); }
+    .badge-analysis  { background:rgba(229,9,20,.18);    color:#fca5a5; border:1px solid rgba(252,165,165,.28); }
+    .badge-etc       { background:rgba(107,114,128,.18); color:#9ca3af; border:1px solid rgba(156,163,175,.28); }
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.32s ease forwards; opacity: 0; }
+    /* ── Line clamp ── */
+    .clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .clamp-3 { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+    /* ── Select ── */
+    select { appearance: none; -webkit-appearance: none; }
+    option { background: #1a1a1a; color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FIXED NAVIGATION BAR
+═══════════════════════════════════════════════════════════════ -->
+<nav class="glass-nav fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-screen-2xl mx-auto px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4">
+
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-2.5 shrink-0">
+      <div class="w-8 h-8 rounded-lg btn-red flex items-center justify-center shadow-lg">
+        <i class="fa-solid fa-play text-white text-xs ml-0.5"></i>
+      </div>
+      <div class="hidden sm:flex flex-col leading-none">
+        <span class="text-[10px] font-semibold text-red-500 tracking-widest uppercase">Startup</span>
+        <span class="text-sm font-black text-white tracking-tight">RECIPE</span>
+      </div>
+    </a>
+
+    <!-- Search -->
+    <div class="relative flex-1 max-w-lg">
+      <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="제목 또는 설명으로 검색..."
+        class="search-input w-full pl-9 pr-9 py-2 rounded-full text-sm text-white placeholder-gray-600"
+      />
+      <button id="clearSearch" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-300 hidden transition-colors">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+
+    <!-- Sort (desktop) -->
+    <div class="relative shrink-0 hidden sm:block">
+      <i class="fa-solid fa-sort absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none"></i>
+      <select id="sortSelect" class="search-input pl-8 pr-4 py-2 rounded-full text-sm text-gray-300 cursor-pointer focus:outline-none">
+        <option value="newest">최신순</option>
+        <option value="oldest">오래된순</option>
+      </select>
+    </div>
+
+    <!-- Stats -->
+    <div class="shrink-0 hidden md:flex items-center gap-1.5 text-xs text-gray-600">
+      <i class="fa-solid fa-film text-red-600 text-[10px]"></i>
+      <span id="totalCount" class="text-gray-400 font-semibold">0</span>개
+    </div>
+  </div>
+
+  <!-- Category Chips -->
+  <div class="max-w-screen-2xl mx-auto px-4 md:px-6 pb-2.5">
+    <div id="chipContainer" class="flex gap-1.5 overflow-x-auto hide-scrollbar pt-0.5">
+      <!-- JS-generated -->
+    </div>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════════════════════════ -->
+<section style="padding-top: 108px;">
+  <div id="heroWrap" class="relative w-full overflow-hidden cursor-pointer" style="max-height:520px; min-height:240px; aspect-ratio:21/9;"
+       onclick="onHeroClick()">
+    <!-- Blurred backdrop -->
+    <img id="heroBg" src="" alt=""
+         class="absolute inset-0 w-full h-full object-cover scale-[1.04]"
+         style="filter: blur(3px); transform-origin:center; will-change:transform;" />
+    <!-- Gradient -->
+    <div class="hero-gradient absolute inset-0"></div>
+    <!-- Vignette bottom -->
+    <div class="absolute inset-x-0 bottom-0 h-32"
+         style="background: linear-gradient(to top, #000 0%, transparent 100%)"></div>
+
+    <!-- Content -->
+    <div class="absolute inset-0 flex items-end pb-8 pl-6 md:pl-14 pr-6">
+      <div class="max-w-lg">
+        <div id="heroBadge" class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-md mb-3 badge-analysis">분석</div>
+        <h1 id="heroTitle" class="text-xl md:text-3xl lg:text-4xl font-black text-white leading-tight clamp-2 mb-2.5"
+            style="text-shadow:0 2px 16px rgba(0,0,0,0.9)"></h1>
+        <p id="heroDesc" class="text-[13px] text-gray-300 leading-relaxed clamp-3 mb-5 hidden md:block"
+           style="text-shadow:0 1px 6px rgba(0,0,0,0.8)"></p>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button id="heroPlayBtn"
+                  class="btn-red flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-lg">
+            <i class="fa-solid fa-play text-xs"></i> 재생
+          </button>
+          <button class="btn-outline flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white">
+            <i class="fa-regular fa-circle-info text-xs"></i> 정보
+          </button>
+          <span id="heroDate" class="text-gray-500 text-xs hidden sm:block"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FILTER STATUS BAR
+═══════════════════════════════════════════════════════════════ -->
+<div id="filterBar" class="max-w-screen-2xl mx-auto px-4 md:px-6 mt-5 mb-1 hidden">
+  <div class="flex items-center gap-2 text-xs text-gray-500">
+    <i class="fa-solid fa-filter text-red-600"></i>
+    <span id="filterText"></span>
+    <button id="clearFilters" class="ml-1 text-gray-700 hover:text-gray-300 underline transition-colors">초기화</button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     VIDEO GRID
+═══════════════════════════════════════════════════════════════ -->
+<main class="max-w-screen-2xl mx-auto px-3 md:px-6 pb-24 mt-4">
+
+  <!-- Grid -->
+  <div id="videoGrid"
+       class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
+  </div>
+
+  <!-- Empty state -->
+  <div id="emptyState" class="hidden flex-col items-center justify-center py-36 text-center">
+    <div class="text-6xl mb-5 opacity-20 select-none">🎬</div>
+    <p class="text-gray-500 font-semibold text-lg">검색 결과가 없습니다</p>
+    <p class="text-gray-700 text-sm mt-1.5">다른 키워드나 카테고리를 선택해보세요</p>
+  </div>
+
+  <!-- Load More -->
+  <div class="flex justify-center mt-10">
+    <button id="loadMoreBtn"
+            class="hidden px-8 py-3 rounded-full border border-white/15 text-gray-400 hover:bg-white/8 hover:text-white hover:border-white/25 text-sm font-medium transition-all">
+      더 보기 <span id="remainCount" class="text-gray-600 ml-1 text-xs"></span>
+    </button>
+  </div>
+</main>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CINEMA MODAL
+═══════════════════════════════════════════════════════════════ -->
+<div id="cinemaModal" class="fixed inset-0 z-[200] hidden">
+  <!-- Backdrop -->
+  <div id="modalBackdrop" class="modal-overlay absolute inset-0"></div>
+
+  <!-- Scrollable content -->
+  <div class="relative z-10 h-full overflow-y-auto">
+    <div class="max-w-4xl mx-auto pt-5 pb-14 px-4">
+
+      <!-- Close row -->
+      <div class="flex justify-end mb-4">
+        <button id="closeModal"
+                class="btn-outline flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-white/80 hover:text-white border border-white/10">
+          <i class="fa-solid fa-xmark"></i>
+          <span>닫기</span>
+          <kbd class="text-[10px] text-gray-600 border border-white/10 rounded px-1 ml-0.5">ESC</kbd>
+        </button>
+      </div>
+
+      <!-- Iframe -->
+      <div class="w-full aspect-video rounded-2xl overflow-hidden shadow-[0_32px_80px_rgba(0,0,0,0.9)] ring-1 ring-white/8">
+        <iframe id="modalIframe"
+                src=""
+                title="Video Player"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+                class="w-full h-full"
+                frameborder="0"></iframe>
+      </div>
+
+      <!-- Video info panel -->
+      <div class="mt-5 bg-[#111] rounded-2xl p-5 md:p-6 border border-white/5 fade-up">
+
+        <!-- Meta -->
+        <div class="flex items-center gap-2.5 mb-3 flex-wrap">
+          <span id="modalBadge" class="text-[11px] font-bold px-2.5 py-1 rounded-md badge-analysis"></span>
+          <span id="modalDate" class="text-xs text-gray-600"></span>
+        </div>
+
+        <!-- Title -->
+        <h2 id="modalTitle" class="text-lg md:text-2xl font-black text-white leading-snug mb-4"></h2>
+
+        <!-- Description -->
+        <p id="modalDesc" class="text-sm text-gray-500 leading-relaxed whitespace-pre-line"></p>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap gap-3 mt-6">
+          <a id="modalYTLink" href="#" target="_blank" rel="noopener noreferrer"
+             class="btn-red inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-bold shadow-lg">
+            <i class="fa-brands fa-youtube"></i> YouTube에서 보기
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     DATA & LOGIC
+═══════════════════════════════════════════════════════════════ -->
+<script src="data.js"></script>
+<script>
+const videos = window.VIDEOS_DATA || [];
+
+/* ──────────────────────────────────────────────────────────────
+   CATEGORIES
+────────────────────────────────────────────────────────────── */
+const CATS = [
+  { id:'all',       label:'전체',        icon:'fa-solid fa-grid-2',                 cls:'' },
+  { id:'weekly',    label:'이번주투자',  icon:'fa-solid fa-chart-line',             cls:'badge-weekly' },
+  { id:'report',    label:'위클리리포트',icon:'fa-solid fa-newspaper',              cls:'badge-report' },
+  { id:'interview', label:'인터뷰',      icon:'fa-solid fa-microphone-lines',       cls:'badge-interview' },
+  { id:'news',      label:'뉴스/Shorts', icon:'fa-solid fa-bolt',                   cls:'badge-news' },
+  { id:'bm',        label:'BM 분석',     icon:'fa-solid fa-lightbulb',              cls:'badge-bm' },
+  { id:'analysis',  label:'분석',        icon:'fa-solid fa-magnifying-glass-chart', cls:'badge-analysis' },
+  { id:'etc',       label:'기타',        icon:'fa-solid fa-ellipsis',               cls:'badge-etc' },
+];
+
+const CAT_MAP = Object.fromEntries(CATS.map(c => [c.id, c]));
+
+function detectCat(title) {
+  if (title.includes('[이번주투자]')) return 'weekly';
+  if (title.includes('[위클리투자리포트]') || title.includes('[위클리 팟캐스트]')) return 'report';
+  if (title.includes('대한민국 VC') || title.includes('인터뷰') || title.includes('ZOOM터뷰')) return 'interview';
+  if (title.includes('#shorts') || title.includes('[50초') || title.includes('[58초') || title.includes('뉴스')) return 'news';
+  if (title.includes('[1분 스타트업 BM]')) return 'bm';
+  if ((title.match(/[\uAC00-\uD7A3]/g) || []).length === 0) return 'analysis';
+  return 'etc';
+}
+
+function fmt(iso) {
+  return new Date(iso).toLocaleDateString('ko-KR', { year:'numeric', month:'short', day:'numeric' });
+}
+
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   STATE
+────────────────────────────────────────────────────────────── */
+const PAGE = 20;
+let activeCat  = 'all';
+let query      = '';
+let sortOrder  = 'newest';
+let showCount  = PAGE;
+let filtered   = [];
+let activeHero = null;
+
+/* ──────────────────────────────────────────────────────────────
+   INIT
+────────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  buildChips();
+  buildHero();
+  document.getElementById('totalCount').textContent = videos.length.toLocaleString();
+  applyFilters();
+
+  /* Search */
+  const si = document.getElementById('searchInput');
+  const cs = document.getElementById('clearSearch');
+  si.addEventListener('input', e => {
+    query = e.target.value;
+    cs.classList.toggle('hidden', !query);
+    showCount = PAGE;
+    applyFilters();
+  });
+  cs.addEventListener('click', () => {
+    si.value = query = '';
+    cs.classList.add('hidden');
+    showCount = PAGE;
+    applyFilters();
+  });
+
+  /* Sort */
+  document.getElementById('sortSelect').addEventListener('change', e => {
+    sortOrder = e.target.value;
+    showCount = PAGE;
+    applyFilters();
+  });
+
+  /* Load more */
+  document.getElementById('loadMoreBtn').addEventListener('click', () => {
+    showCount += PAGE;
+    renderGrid();
+    // Smooth scroll to reveal new cards
+  });
+
+  /* Modal close */
+  document.getElementById('closeModal').addEventListener('click', closeModal);
+  document.getElementById('modalBackdrop').addEventListener('click', closeModal);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  /* Clear filters */
+  document.getElementById('clearFilters').addEventListener('click', () => {
+    activeCat = 'all';
+    query = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('clearSearch').classList.add('hidden');
+    showCount = PAGE;
+    updateChips();
+    applyFilters();
+  });
+});
+
+/* ──────────────────────────────────────────────────────────────
+   CATEGORY CHIPS
+────────────────────────────────────────────────────────────── */
+function buildChips() {
+  const counts = { all: videos.length };
+  videos.forEach(v => { const c = detectCat(v.title); counts[c] = (counts[c]||0) + 1; });
+
+  const wrap = document.getElementById('chipContainer');
+  wrap.innerHTML = CATS
+    .filter(cat => cat.id === 'all' || (counts[cat.id] || 0) > 0)
+    .map(cat => {
+      const n = counts[cat.id] || 0;
+      const active = cat.id === 'all';
+      return `
+        <button
+          class="chip shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all
+                 ${active ? 'chip-active border-red-600' : 'bg-white/[0.06] text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'}"
+          data-id="${cat.id}"
+          onclick="selectCat('${cat.id}')"
+        >
+          <i class="${cat.icon} text-[9px]"></i>
+          <span>${cat.label}</span>
+          ${n > 0 ? `<span class="opacity-50 font-normal text-[10px]">${n}</span>` : ''}
+        </button>`;
+    }).join('');
+}
+
+function updateChips() {
+  document.querySelectorAll('.chip').forEach(btn => {
+    const isActive = btn.dataset.id === activeCat;
+    btn.classList.toggle('chip-active', isActive);
+    btn.classList.toggle('border-red-600', isActive);
+    btn.classList.toggle('bg-white/[0.06]', !isActive);
+    btn.classList.toggle('text-gray-400', !isActive);
+    btn.classList.toggle('border-white/10', !isActive);
+  });
+}
+
+function selectCat(id) {
+  activeCat = id;
+  showCount = PAGE;
+  updateChips();
+  applyFilters();
+}
+
+/* ──────────────────────────────────────────────────────────────
+   HERO
+────────────────────────────────────────────────────────────── */
+function buildHero() {
+  if (!videos.length) return;
+  const v = videos[0];
+  activeHero = v;
+  const cat = detectCat(v.title);
+  const catObj = CAT_MAP[cat];
+
+  document.getElementById('heroBg').src = v.thumbnail;
+  document.getElementById('heroTitle').textContent = v.title;
+  document.getElementById('heroDesc').textContent = v.description;
+  document.getElementById('heroDate').textContent = fmt(v.publishedAt);
+
+  const badge = document.getElementById('heroBadge');
+  badge.textContent = catObj?.label || '분석';
+  badge.className = `inline-block text-[11px] font-bold px-2.5 py-1 rounded-md mb-3 ${catObj?.cls || 'badge-analysis'}`;
+
+  document.getElementById('heroPlayBtn').onclick = e => { e.stopPropagation(); openModal(v); };
+}
+
+function onHeroClick() { if (activeHero) openModal(activeHero); }
+
+/* ──────────────────────────────────────────────────────────────
+   FILTERS
+────────────────────────────────────────────────────────────── */
+function applyFilters() {
+  const q = query.toLowerCase().trim();
+  filtered = videos
+    .filter(v => {
+      const matchCat  = activeCat === 'all' || detectCat(v.title) === activeCat;
+      const matchQ    = !q || v.title.toLowerCase().includes(q) || v.description.toLowerCase().includes(q);
+      return matchCat && matchQ;
+    })
+    .sort((a, b) => {
+      const d = new Date(b.publishedAt) - new Date(a.publishedAt);
+      return sortOrder === 'newest' ? d : -d;
+    });
+
+  /* Filter bar */
+  const hasFilter = activeCat !== 'all' || !!query;
+  document.getElementById('filterBar').classList.toggle('hidden', !hasFilter);
+  if (hasFilter) {
+    const parts = [];
+    if (query) parts.push(`"${query}"`);
+    if (activeCat !== 'all') parts.push(CAT_MAP[activeCat]?.label || activeCat);
+    document.getElementById('filterText').textContent =
+      `${filtered.length.toLocaleString()}개 결과 · ${parts.join(', ')}`;
+  }
+
+  renderGrid();
+}
+
+/* ──────────────────────────────────────────────────────────────
+   RENDER GRID
+────────────────────────────────────────────────────────────── */
+function renderGrid() {
+  const grid  = document.getElementById('videoGrid');
+  const empty = document.getElementById('emptyState');
+  const lmBtn = document.getElementById('loadMoreBtn');
+  const rcnt  = document.getElementById('remainCount');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    empty.classList.add('flex');
+    lmBtn.classList.add('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  empty.classList.remove('flex');
+
+  const slice  = filtered.slice(0, showCount);
+  const remain = filtered.length - showCount;
+
+  grid.innerHTML = slice.map((v, i) => {
+    const cat    = detectCat(v.title);
+    const catObj = CAT_MAP[cat];
+    const idx    = videos.indexOf(v);
+    const delay  = Math.min(i % PAGE, 14) * 25;
+
+    return `
+      <div class="video-card rounded-xl overflow-hidden cursor-pointer bg-[#111] border border-white/[0.05] hover:border-white/[0.14] fade-up"
+           style="animation-delay:${delay}ms"
+           onclick="openModal(videos[${idx}])">
+
+        <!-- Thumbnail -->
+        <div class="relative aspect-video overflow-hidden bg-black/60">
+          <img src="${esc(v.thumbnail)}"
+               alt="${esc(v.title)}"
+               class="thumb-img w-full h-full object-cover"
+               loading="lazy" />
+
+          <!-- Play overlay -->
+          <div class="play-overlay absolute inset-0 bg-black/30 flex items-center justify-center">
+            <div class="w-11 h-11 rounded-full bg-white/88 flex items-center justify-center shadow-2xl">
+              <i class="fa-solid fa-play text-black text-xs ml-0.5"></i>
+            </div>
+          </div>
+
+          <!-- Category badge -->
+          <div class="absolute top-2 left-2">
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded ${catObj?.cls || 'badge-etc'}">
+              ${esc(catObj?.label || '기타')}
+            </span>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="p-2.5 md:p-3">
+          <h3 class="text-[11px] md:text-xs font-semibold text-white/90 leading-snug clamp-2 mb-1.5">
+            ${esc(v.title)}
+          </h3>
+          <p class="text-[9px] md:text-[10px] text-gray-700 font-medium">${fmt(v.publishedAt)}</p>
+        </div>
+      </div>`;
+  }).join('');
+
+  if (remain > 0) {
+    lmBtn.classList.remove('hidden');
+    rcnt.textContent = `(${remain.toLocaleString()}개 더)`;
+  } else {
+    lmBtn.classList.add('hidden');
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   CINEMA MODAL
+────────────────────────────────────────────────────────────── */
+function openModal(v) {
+  if (!v) return;
+  const cat    = detectCat(v.title);
+  const catObj = CAT_MAP[cat];
+
+  document.getElementById('modalIframe').src =
+    `https://www.youtube.com/embed/${v.videoId}?autoplay=1&rel=0&modestbranding=1`;
+  document.getElementById('modalTitle').textContent = v.title;
+  document.getElementById('modalDesc').textContent  = v.description;
+  document.getElementById('modalDate').textContent  = fmt(v.publishedAt);
+  document.getElementById('modalYTLink').href =
+    `https://www.youtube.com/watch?v=${v.videoId}`;
+
+  const badge = document.getElementById('modalBadge');
+  badge.textContent = catObj?.label || '기타';
+  badge.className   = `text-[11px] font-bold px-2.5 py-1 rounded-md ${catObj?.cls || 'badge-etc'}`;
+
+  document.getElementById('cinemaModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('cinemaModal').classList.add('hidden');
+  document.getElementById('modalIframe').src = '';
+  document.body.style.overflow = '';
+}
+</script>
+</body>
+</html>
